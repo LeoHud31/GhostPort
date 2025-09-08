@@ -1,0 +1,54 @@
+core features
+Basic
+take target IP/hostname 
+loop through range of ports
+TCP connect scan - Socket
+print open ports
+
+medium
+concurrent scanning 
+service/banner grabbing (FTP, SSH)
+output formats (JSON, CSV, TXT)(can use same from GhostDir)
+UDP scanning
+Custom port ranges
+
+Advanced
+OS fingerprint
+Service version detection
+SYN scan 
+Traceroute mode
+
+tech stack
+python
+C - maybe
+socket -> connect to TCP ports and grab banners
+Ipaddress -> handle IP ranges
+argparse ->CLI (use GhostDir as example)
+concurrent.futures or threading ->concurrency
+asyncio ->async scans
+dnspython -> resolve hostnames/subdomains if needed
+scapy -> build/send TCP SYN/UDP packets and sniff replies
+cryptography -> TLS handshake
+libpcap (C) -> raw packet capture same as Nmap
+
+Dev stage 1
+working port scanner to check for open and closed ports
+output -> use same as GhostDir
+modules -> socket: connect to ports, argparse: command line options, ipaddress: handle IP addresses and ranges
+
+Dev Stage 2
+increase speed and useability
+scan ranges -> 1-1000
+service mapping -> 80 HTTP, 22 SSH
+Modules -> asyncio: async scanning for speed, time: scan duration measurement
+
+Dev Stage 3
+develop socket use
+Grab service banners
+socket.recv() -> after connect for banners, struct + sockets -> send UDP packets, dnspython -> test DNS port
+
+Dev Stage 4
+SYN scan and OS fingerprint
+modules -> scapy: raw packet crafting + sniffing, pycapy or pydivert: packet capture
+
+
