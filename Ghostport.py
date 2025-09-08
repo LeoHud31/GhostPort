@@ -4,7 +4,7 @@ import asyncio
 import time
 import concurrent.futures
 from Utils import output
-from typing import Iterable, List, Dict, Optional, Union
+
 
 #handles ports and ranges
 def parse_port_range(port_input):
@@ -16,100 +16,106 @@ def parse_port_range(port_input):
         port = int(port_input)
         return port, port
 
-def Scan_port(host: str, port: int, timeout: float = 1) -> Dict[str, bool]:
+async def Scan_port(host, port, timeout = 1):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
         err = sock.connect_ex((host, port))
         sock.close()
-        return {"Open": err == 0}
+        return {"open": err == 0, "port": port}
     except Exception:
-        return {"Open": False}
+        return {"open": False, "port": port}
 
 
-def Sequential(host, ports, timeout = 1, delay = 0):
+async def Sequential(host, ports, timeout = 1, delay = 0):
     open_ports = []
     for port in ports:
-        result = Scan_port(host, port, timeout)
+        result = await Scan_port(host, port, timeout)
         if result.get('open'):
             print(f"Open: {port}")
             open_ports.append(port)
         if delay > 0:
-            time.sleep(delay)
-    return sorted(open_ports)
+            await asyncio.sleep(delay)
+    return open_ports
 
 async def Fast_sequential(host, ports, timeout = 0.3, delay = 0):
     open_ports = []
     for port in ports:
-        result = Scan_port(host, port, timeout)
+        result = await Scan_port(host, port, timeout)
         if result.get('open'):
             print(f"Open: {port}")
             open_ports.append(port)
         if delay > 0:
-            time.sleep(delay)
-    return sorted(open_ports)
+            await asyncio.sleep(delay)
+    return open_ports
 
 async def Multi_threaded(host, ports, timeout=0.2, workers=100):
     open_ports = []
+    loop = asyncio.get_event_loop()
+
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         future_port = {
-            executor.submit(Scan_port, host, port, timeout): port
+            loop.run_in_executor(executor, Scan_port, host, port, timeout): port
             for port in ports
         }
 
-        for future in concurrent.futures.as_completed(future_port):
+        for future in asyncio.as_completed(future_port.keys()):
             port = future_port[future]
 
             try:
-                result = future.result()
+                result = await future
                 if result['open']:
                     print(f"Open {port}")
                     open_ports.append(port)
             
             except Exception as e:
                 print(f"Error scanning port {port}: {e}")
-    return sorted(open_ports)
+    return open_ports
 
 
-async def Async_scan(host, ports, port,  timeout = 0.15, semaphore_limit = 500):
+async def Async_scan(host, ports, timeout = 0.15, semaphore_limit = 500):
     semaphore = asyncio.Semaphore(semaphore_limit)
     open_ports = []
 
     async with semaphore:
-        try:
-            reader, writer = await asyncio.wait_for(
-                asyncio.open_connection(host, port),
-                timeout=timeout
-            )
-            writer.close()
-            await writer.wait_closed()
-            return {"Open": port}
-        except Exception as e:
-            print(f"Error occured at {e}")
+        return await Scan_port(host, ports, timeout)
 
     tasks = [Scan_port(port) for port in ports]
     results = await asyncio.gather(*tasks)
 
-    for result in results:
+    for i, result in enumerate(results):
+        if isinstance(result, Exception):
+            print(f"Error scanning port {ports[i]}: {result}")
+            continue
         if result["open"]:
             print(f"Open: {result['port']}")
             open_ports.append(result["port"])
-    return sorted(open_ports)
 
-async def Stealth(host, ports, timeout = 1.5, delay = 0.5):
-    return Multi_threaded(host, ports, timeout, delay)
+    return open_ports
+
+async def Stealth(host, ports, timeout = 1, delay = 0.5):
+    open_ports = []
+    for port in ports:
+        result = await Scan_port(host, port, timeout)
+        if result.get('open'):
+            print(f"Open: {port}")
+            open_ports.append(port)
+        if delay > 0:
+            await asyncio.sleep(delay)
+    return open_ports
 
 async def Aggressive(host, ports, timeout=0.1, semaphore_limit=1000):
-    return asyncio.run(Async_scan(host, ports, timeout, semaphore_limit))
+    return await Async_scan(host, ports, timeout, semaphore_limit)
 
 async def Balanced(host, ports, timeout=0.5, workers =50):
-    return Multi_threaded(host, ports, timeout, workers)
+    return await Multi_threaded(host, ports, timeout, workers)
 
 async def main(args: argparse.Namespace) -> None:
     try:
         target = args.target
-        if target == False:
+        if not target:
             print("Invalid target")
+            return
 
         if args.range:
             try:
@@ -119,25 +125,35 @@ async def main(args: argparse.Namespace) -> None:
         else:
             start_port, end_port = 1,1024
 
+        ports = range(start_port, end_port +1)
+
         if args.mode:
             try:
+                print(f"Scanning {target} ports {start_port}-{end_port} in mode {args.mode}")
+                start_time = time.time()
+
                 if args.mode == 1:
-                    await Sequential()
+                    open_ports = await Sequential(target, ports)
                 elif args.mode == 2:
-                    await Fast_sequential()
+                    open_ports = await Fast_sequential(target, ports)
                 elif args.mode == 3:
-                    await Multi_threaded()
+                    open_ports = await Multi_threaded(target, ports)
                 elif args.mode == 4:
-                    await Async_scan()
+                    open_ports = await Async_scan(target, ports)
                 elif args.mode == 5:
-                    await Stealth()
+                    open_ports = await Stealth(target, ports)
                 elif args.mode == 6:
-                    await Aggressive()
+                    open_ports = await Aggressive(target, ports)
                 elif args.mode ==7:
-                    await Balanced()
+                    open_ports = await Balanced(target, ports)
                 else:
                     print("Invalid mode. Chosse 1-7")
                     return
+                
+                end_time = time.time()
+                print(f"\n Scan completed time taken {end_time - start_time:.2f} seconds")
+                print(f"Open ports found: {open_ports}")
+
             except Exception as e:
                 print("Error in mode execution")
 
