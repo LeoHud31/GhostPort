@@ -16,7 +16,7 @@ def parse_port_range(port_input):
         port = int(port_input)
         return port, port
 
-async def Scan_port(host, port, timeout = 1):
+def Scan_port_sync(host, port, timeout = 0.5):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(timeout)
@@ -27,7 +27,23 @@ async def Scan_port(host, port, timeout = 1):
         return {"open": False, "port": port}
 
 
-async def Sequential(host, ports, timeout = 1, delay = 0):
+async def Scan_port(host, port, timeout = 0.5):
+    try:
+        reader, writer = await asyncio.wait_for(
+            asyncio.open_connection(host, port),
+            timeout=timeout
+        )
+        writer.close()
+        try:
+            await writer.wait_closed()
+        except AttributeError:
+            pass
+        return {"open": True, "port": port}
+    except Exception:
+        return {"open": False, "port": port}
+
+
+async def Sequential(host, ports, timeout = 0.6, delay = 0):
     open_ports = []
     for port in ports:
         result = await Scan_port(host, port, timeout)
@@ -55,7 +71,7 @@ async def Multi_threaded(host, ports, timeout=0.2, workers=100):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         future_port = {
-            loop.run_in_executor(executor, Scan_port, host, port, timeout): port
+            loop.run_in_executor(executor, Scan_port_sync, host, port, timeout): port
             for port in ports
         }
 
@@ -73,14 +89,15 @@ async def Multi_threaded(host, ports, timeout=0.2, workers=100):
     return open_ports
 
 
-async def Async_scan(host, ports, timeout = 0.15, semaphore_limit = 500):
+async def Async_scan(host, ports, timeout = 1, semaphore_limit = 200):
     semaphore = asyncio.Semaphore(semaphore_limit)
     open_ports = []
 
-    async with semaphore:
-        return await Scan_port(host, ports, timeout)
+    async def Scan_with_semaphore(port):
+        async with semaphore:
+            return await Scan_port(host, port, timeout)
 
-    tasks = [Scan_port(port) for port in ports]
+    tasks = [asyncio.create_task(Scan_with_semaphore(port)) for port in ports]
     results = await asyncio.gather(*tasks)
 
     for i, result in enumerate(results):
@@ -93,7 +110,7 @@ async def Async_scan(host, ports, timeout = 0.15, semaphore_limit = 500):
 
     return open_ports
 
-async def Stealth(host, ports, timeout = 1, delay = 0.5):
+async def Stealth(host, ports, timeout = 0.6, delay = 0.5):
     open_ports = []
     for port in ports:
         result = await Scan_port(host, port, timeout)

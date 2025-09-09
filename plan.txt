@@ -51,4 +51,9 @@ Dev Stage 4
 SYN scan and OS fingerprint
 modules -> scapy: raw packet crafting + sniffing, pycapy or pydivert: packet capture
 
-
+scanning speed 1-100 ports - target: testphp.vulnweb.com
+mode 1 (sequential)- 59.84 seconds: found 53, 80
+mode 2 (fast sequential)- 30.37 seconds: found 53, 80
+mode 3 (Multi-threaded)
+mode 4 (Async) - 1.02 seconds: found 53, 80
+mode 5 (stealth)- 110.59 seconds: found 53, 80
