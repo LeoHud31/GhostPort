@@ -16,6 +16,7 @@ def parse_port_range(port_input):
         port = int(port_input)
         return port, port
 
+#scan port without the async function
 def Scan_port_sync(host, port, timeout = 0.5):
     try:
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
@@ -26,7 +27,7 @@ def Scan_port_sync(host, port, timeout = 0.5):
     except Exception:
         return {"open": False, "port": port}
 
-
+#scan port with async, dont remove the reader variable, although its not called dont remove it or it wont works
 async def Scan_port(host, port, timeout = 0.5):
     try:
         reader, writer = await asyncio.wait_for(
@@ -42,7 +43,7 @@ async def Scan_port(host, port, timeout = 0.5):
     except Exception:
         return {"open": False, "port": port}
 
-
+#scans port with async and has a smaller timeout
 async def Sequential(host, ports, timeout = 0.6, delay = 0):
     open_ports = []
     for port in ports:
@@ -54,6 +55,7 @@ async def Sequential(host, ports, timeout = 0.6, delay = 0):
             await asyncio.sleep(delay)
     return open_ports
 
+#faster as has even smaller timeout
 async def Fast_sequential(host, ports, timeout = 0.3, delay = 0):
     open_ports = []
     for port in ports:
@@ -65,6 +67,7 @@ async def Fast_sequential(host, ports, timeout = 0.3, delay = 0):
             await asyncio.sleep(delay)
     return open_ports
 
+#multithreading has short timeout and 100 workers, distributes the work over 100 sub processes
 async def Multi_threaded(host, ports, timeout=0.2, workers=100):
     open_ports = []
     loop = asyncio.get_event_loop()
@@ -86,7 +89,7 @@ async def Multi_threaded(host, ports, timeout=0.2, workers=100):
                 print(f"Error scanning port: {e}")
     return open_ports
 
-
+#similar to multithreaded but uses async and semaphore rather than multithreaded
 async def Async_scan(host, ports, timeout = 1, semaphore_limit = 200):
     semaphore = asyncio.Semaphore(semaphore_limit)
     open_ports = []
@@ -108,6 +111,7 @@ async def Async_scan(host, ports, timeout = 1, semaphore_limit = 200):
 
     return open_ports
 
+#uses the sacn port but slows it down
 async def Stealth(host, ports, timeout = 0.6, delay = 0.5):
     open_ports = []
     for port in ports:
@@ -119,12 +123,15 @@ async def Stealth(host, ports, timeout = 0.6, delay = 0.5):
             await asyncio.sleep(delay)
     return open_ports
 
+#very fast version of async
 async def Aggressive(host, ports, timeout=0.5, semaphore_limit=1000):
     return await Async_scan(host, ports, timeout, semaphore_limit)
 
+#quick using multi threaded
 async def Balanced(host, ports, timeout=0.5, workers =50):
     return await Multi_threaded(host, ports, timeout, workers)
 
+#main function
 async def main(args: argparse.Namespace) -> None:
     try:
         target = args.target
@@ -142,6 +149,7 @@ async def main(args: argparse.Namespace) -> None:
 
         ports = range(start_port, end_port +1)
 
+        #loops through modes
         if args.mode:
             try:
                 print(f"Scanning {target} ports {start_port}-{end_port} in mode {args.mode}")
