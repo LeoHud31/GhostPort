@@ -121,7 +121,7 @@ async def Stealth(host, ports, timeout = 0.6, delay = 0.5):
             await asyncio.sleep(delay)
     return open_ports
 
-async def Aggressive(host, ports, timeout=0.1, semaphore_limit=1000):
+async def Aggressive(host, ports, timeout=0.5, semaphore_limit=1000):
     return await Async_scan(host, ports, timeout, semaphore_limit)
 
 async def Balanced(host, ports, timeout=0.5, workers =50):

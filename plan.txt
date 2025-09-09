@@ -57,3 +57,5 @@ mode 2 (fast sequential)- 30.37 seconds: found 53, 80
 mode 3 (Multi-threaded)
 mode 4 (Async) - 1.02 seconds: found 53, 80
 mode 5 (stealth)- 110.59 seconds: found 53, 80
+mode 6 (aggressive) - 0.51 seconds: found 53, 80
+mode 7 (balanced)
