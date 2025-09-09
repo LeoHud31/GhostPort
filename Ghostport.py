@@ -3,7 +3,7 @@ import socket
 import asyncio
 import time
 import concurrent.futures
-from Utils import output
+from Utils.output import output
 
 
 #handles ports and ranges
@@ -166,12 +166,17 @@ async def main(args: argparse.Namespace) -> None:
                     return
                 
                 end_time = time.time()
-                print(f"\n Scan completed time taken {end_time - start_time:.2f} seconds")
+                print(f"\nScan completed time taken {end_time - start_time:.2f} seconds")
                 print(f"Open ports found: {open_ports}")
 
             except Exception as e:
                print(f"Error in mode execution {e}")
 
+        if open_ports:
+            if args.output:
+                output.output_results(open_ports, args.output)
+            else:
+                output.output_results(open_ports)
 
     except Exception as e:
         print(f"An error occured: {e}")
