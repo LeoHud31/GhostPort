@@ -71,21 +71,19 @@ async def Multi_threaded(host, ports, timeout=0.2, workers=100):
 
     with concurrent.futures.ThreadPoolExecutor(max_workers=workers) as executor:
         future_port = {
-            loop.run_in_executor(executor, Scan_port_sync, host, port, timeout): port
+            loop.run_in_executor(executor, Scan_port_sync, host, port, timeout)
             for port in ports
         }
 
-        for future in asyncio.as_completed(future_port.keys()):
-            port = future_port[future]
-
+        for task in asyncio.as_completed(future_port):
             try:
-                result = await future
+                result = await task
                 if result['open']:
-                    print(f"Open {port}")
-                    open_ports.append(port)
+                    print(f"Open {result['port']}")
+                    open_ports.append(result["port"])
             
             except Exception as e:
-                print(f"Error scanning port {port}: {e}")
+                print(f"Error scanning port: {e}")
     return open_ports
 
 
@@ -172,7 +170,7 @@ async def main(args: argparse.Namespace) -> None:
                 print(f"Open ports found: {open_ports}")
 
             except Exception as e:
-                print("Error in mode execution")
+               print(f"Error in mode execution {e}")
 
 
     except Exception as e:

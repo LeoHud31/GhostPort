@@ -31,16 +31,16 @@ scapy -> build/send TCP SYN/UDP packets and sniff replies
 cryptography -> TLS handshake
 libpcap (C) -> raw packet capture same as Nmap
 
-Dev stage 1
-working port scanner to check for open and closed ports
-output -> use same as GhostDir
-modules -> socket: connect to ports, argparse: command line options, ipaddress: handle IP addresses and ranges
+Dev stage 1 
+working port scanner to check for open and closed ports | done
+output -> use same as GhostDir | done
+modules -> socket: connect to ports, argparse: command line options, ipaddress: handle IP addresses and ranges | done
 
 Dev Stage 2
-increase speed and useability
-scan ranges -> 1-1000
+increase speed and useability | done
+scan ranges -> 1-1024 | done
 service mapping -> 80 HTTP, 22 SSH
-Modules -> asyncio: async scanning for speed, time: scan duration measurement
+Modules -> asyncio: async scanning for speed, time: scan duration measurement | done
 
 Dev Stage 3
 develop socket use
@@ -52,10 +52,10 @@ SYN scan and OS fingerprint
 modules -> scapy: raw packet crafting + sniffing, pycapy or pydivert: packet capture
 
 scanning speed 1-100 ports - target: testphp.vulnweb.com
-mode 1 (sequential)- 59.84 seconds: found 53, 80
-mode 2 (fast sequential)- 30.37 seconds: found 53, 80
-mode 3 (Multi-threaded)
-mode 4 (Async) - 1.02 seconds: found 53, 80
-mode 5 (stealth)- 110.59 seconds: found 53, 80
-mode 6 (aggressive) - 0.51 seconds: found 53, 80
-mode 7 (balanced)
+mode 1 (sequential) - 59.84 seconds: found 53, 80 - all ports:622.37, found 53,80
+mode 2 (fast sequential) - 30.37 seconds: found 53, 80 - all ports: 315.68 seconds, found 53,80
+mode 3 (Multi-threaded) - 0.26 seconds: found 53, 80 - all ports: 2.37 seconds, found 53,80
+mode 4 (Async) - 1.02 seconds: found 53, 80 - all ports: 6.09 seconds found 53,80
+mode 5 (stealth)- 110.59 seconds: found 53, 80 - all ports: 1105.9 seconds found 53,80
+mode 6 (aggressive) - 0.51 seconds: found 53, 80 - all ports: 1.09 seconds, found 53,80
+mode 7 (balanced) - 1.06 seconds: found 53, 80 - all ports: 10.74 seconds, found 53,80
