@@ -11,36 +11,36 @@ class output:
         result_name: str | None = None
     ) -> None:
 
-        def _print_console(r):
-            print("Printing results to console instead:")
-            if isinstance(r, dict):
-                for k, v in r.items():
-                    print(f"{k}: {v}")
+        def Print_console(r):
+#            print("Printing results to console instead:")
+#            if isinstance(r, dict):
+#                for k, v in r.items():
+#                    print(f"{k}: {v}")
+#            else:
+#                for item in r:
+#                    print(item)
+
+            if result_name:
+                path = Path(result_name)
+                try:
+                    match path.suffix.lower():
+                        case ".txt":
+                            write_txt(path, results)
+                        case ".csv":
+                            write_csv(path, results)
+                        case ".json":
+                            write_json(path, results)
+                        case _:
+                            print("Unsupported file format. Please use .txt, .csv, or .json")
+                            Print_console(results)
+                            return
+                    print(f"Results saved to {result_name} at {path.resolve()}")
+
+                except Exception as e:
+                    print(f"Error saving results: {e}")
+                    Print_console(results)
             else:
-                for item in r:
-                    print(item)
-
-        if result_name:
-            path = Path(result_name)
-            try:
-                match path.suffix.lower():
-                    case ".txt":
-                        write_txt(path, results)
-                    case ".csv":
-                        write_csv(path, results)
-                    case ".json":
-                        write_json(path, results)
-                    case _:
-                        print("Unsupported file format. Please use .txt, .csv, or .json")
-                        _print_console(results)
-                        return
-                print(f"Results saved to {result_name} at {path.resolve()}")
-
-            except Exception as e:
-                print(f"Error saving results: {e}")
-                _print_console(results)
-        else:
-            _print_console(results)
+                Print_console(results)
 
 
 def write_txt(path: Path, results: Union[Dict[str, Any], Iterable[Any]]) -> None:

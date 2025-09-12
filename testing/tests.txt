@@ -1,0 +1,48 @@
+mode 1 - Sequential
+URL: http://testphp.vulnweb.com
+Expected output: 53, 80
+attempts: 5 | 5
+Correct: 5 | 5
+Average time: 613.68 seconds (10.23 Minutes)| after tweaks 423.53 seconds | 31% increase in speed
+
+mode 2 - Fast Sequential
+URL: http://testphp.vulnweb.com
+Expected output: 53, 80
+attempts: 5 
+Correct: 5 
+Average time: 311.91 seconds (5.2 minutes)
+
+mode 3 - Multi threaded
+URL: http://testphp.vulnweb.com
+Expected output: 53, 80
+attempts: 5
+Correct: 5
+Average time: 2.35 seconds
+
+mode 4 - Async
+URL: http://testphp.vulnweb.com
+Expected output: 53, 80
+attempts: 5
+Correct: 5
+Average time: 6.10 seconds
+
+mode 5 - Stealth
+URL: http://testphp.vulnweb.com
+Expected output: 53, 80
+attempts: 5 | 5
+Correct: 5 | 5
+Average time: 1131.62 seconds (18.86 minutes)| after tweaks 826.06 | 27% increase in speed
+
+mode 6 - Aggressive
+URL: http://testphp.vulnweb.com
+Expected output: 53, 80
+attempts: 10
+Correct: 10
+Average time: 1.30 seconds
+
+mode 7 - balanced
+URL: http://testphp.vulnweb.com
+Expected output: 53, 80
+attempts: 5
+Correct: 5
+Average time: 10.75 seconds
