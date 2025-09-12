@@ -23,33 +23,8 @@ banner_dictionary = {
     "443": "HTTPS"
 }
 
-def get_service_info(port):
-    service_name = banner_dictionary.get(str(port))
-    is_known = str(port) in banner_dictionary
-    return{
-        'port': port,
-        'service': service_name,
-        'known': is_known
-    }
-
 def get_service_name(port):
-    """Get service name from port number using your dictionary"""
     return banner_dictionary.get(str(port), f"Unknown-{port}")
-
-def is_known_service(port):
-    """Check if port is in your dictionary"""
-    return str(port) in banner_dictionary
-
-def get_service_info(port):
-    """Get both port and service name"""
-    service = get_service_name(port)
-    known = is_known_service(port)
-    return {
-        'port': port,
-        'service': service,
-        'known': known
-    }
-    
 
 #handles ports and ranges
 def parse_port_range(port_input):
@@ -95,7 +70,8 @@ async def Sequential(host, ports, timeout = 0.3, delay = 0.1):
     for port in ports:
         result = await Scan_port(host, port, timeout)
         if result.get('open'):
-            print(f"Open: {port}")
+            info = get_service_name(result["port"])
+            print(f"Open: {port} {info}")
             open_ports.append(port)
         if delay > 0:
             await asyncio.sleep(delay)
@@ -107,7 +83,8 @@ async def Fast_sequential(host, ports, timeout = 0.3, delay = 0):
     for port in ports:
         result = await Scan_port(host, port, timeout)
         if result.get('open'):
-            print(f"Open: {port}")
+            info = get_service_name(result["port"])
+            print(f"Open: {port} {info}")
             open_ports.append(port)
         if delay > 0:
             await asyncio.sleep(delay)
@@ -128,7 +105,8 @@ async def Multi_threaded(host, ports, timeout=0.2, workers=100):
             try:
                 result = await task
                 if result['open']:
-                    print(f"Open {result['port']}")
+                    info = get_service_name(result["port"])
+                    print(f"Open {result['port']} {info}")
                     open_ports.append(result["port"])
             
             except Exception as e:
@@ -152,8 +130,9 @@ async def Async_scan(host, ports, timeout = 1, semaphore_limit = 200):
             print(f"Error scanning port {ports[i]}: {result}")
             continue
         if result["open"]:
-            print(f"Open: {result['port']}")
-            open_ports.append(result["port"])
+            info = get_service_name(result["port"])
+            print(f"Open: {result['port']} {info}")
+            open_ports.append((result["port"]))
 
     return open_ports
 
@@ -163,7 +142,8 @@ async def Stealth(host, ports, timeout = 0.6, delay = 0.2):
     for port in ports:
         result = await Scan_port(host, port, timeout)
         if result.get('open'):
-            print(f"Open: {port}")
+            info = get_service_name(result["port"])
+            print(f"Open: {port} {info}")
             open_ports.append(port)
         if delay > 0:
             await asyncio.sleep(delay)
@@ -231,7 +211,6 @@ async def main(args: argparse.Namespace) -> None:
                 
                 end_time = time.time()
                 print(f"\nScan completed time taken {end_time - start_time:.2f} seconds")
-                print(f"Open ports found: {open_ports}")
 
             except Exception as e:
                print(f"Error in mode execution {e}")
@@ -240,7 +219,7 @@ async def main(args: argparse.Namespace) -> None:
         if args.output:
             output.output_results(open_ports, args.output)
         else:
-            output.output_results(open_ports)
+            pass
 
     except Exception as e:
         print(f"An error occured: {e}")
