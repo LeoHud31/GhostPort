@@ -5,7 +5,7 @@ import time
 import concurrent.futures
 from Utils.output import output
 
-#service info NOT WORKING
+#service info
 banner_dictionary = {
     "20": "FTP",
     "21": "FTP",
